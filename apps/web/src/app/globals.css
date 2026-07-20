@@ -1,0 +1,159 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+  Dark is the DEFAULT theme (see docs/09-design-tokens.md) — the opposite of
+  shadcn's usual light-default/.dark-class convention. We drive theme purely
+  off these custom properties; [data-theme="light"] overrides them, and there
+  is no .dark class variant in use.
+*/
+
+:root {
+  --background: hsl(222 15% 8%);
+  --foreground: hsl(210 20% 96%);
+
+  --surface: hsl(222 14% 11%);
+  --surface-raised: hsl(222 13% 15%);
+  --border: hsl(222 10% 20%);
+
+  --text-primary: hsl(210 20% 96%);
+  --text-secondary: hsl(215 12% 65%);
+  --text-tertiary: hsl(215 10% 45%);
+
+  /* Brand indigo — the app's one accent color */
+  --brand: hsl(255 85% 65%);
+  --brand-foreground: hsl(0 0% 100%);
+
+  --success: hsl(150 60% 45%);
+  --warning: hsl(40 90% 55%);
+  --danger: hsl(5 80% 60%);
+  --focus-ring: hsl(255 85% 65%);
+
+  /* shadcn structural tokens, remapped onto the palette above */
+  --card: var(--surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-primary);
+
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+
+  --secondary: hsl(222 12% 18%);
+  --secondary-foreground: var(--text-primary);
+
+  --muted: hsl(222 12% 14%);
+  --muted-foreground: var(--text-secondary);
+
+  /* Subtle brand-tinted hover/highlight background, distinct from --primary */
+  --accent: hsl(255 40% 20%);
+  --accent-foreground: var(--text-primary);
+
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--focus-ring);
+
+  --radius: 10px;
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--focus-ring);
+}
+
+[data-theme="light"] {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222 20% 12%);
+
+  --surface: hsl(220 20% 98%);
+  --surface-raised: hsl(0 0% 100%);
+  --border: hsl(220 15% 90%);
+
+  --text-primary: hsl(222 20% 12%);
+  --text-secondary: hsl(220 10% 40%);
+  --text-tertiary: hsl(220 8% 55%);
+
+  --brand: hsl(255 75% 55%);
+  --brand-foreground: hsl(0 0% 100%);
+
+  --success: hsl(150 55% 38%);
+  --warning: hsl(40 85% 45%);
+  --danger: hsl(5 75% 50%);
+  --focus-ring: hsl(255 75% 55%);
+
+  --secondary: hsl(220 15% 94%);
+  --muted: hsl(220 20% 95%);
+  --accent: hsl(255 70% 96%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: calc(var(--radius) * 1.4);
+
+  --font-sans: var(--font-inter);
+}
+
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

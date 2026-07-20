@@ -1,0 +1,422 @@
+// Personal AI Operating System — v1 schema
+// Lives at packages/database/prisma/schema.prisma once implementation starts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────────────────────────────────
+
+model User {
+  id          String   @id @default(cuid())
+  clerkId     String   @unique
+  email       String   @unique
+  name        String?
+  heightCm    Float?
+  sex         Sex?
+  dateOfBirth DateTime?
+  weightUnit  WeightUnit @default(KG)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  goals            Goal[]
+  habits           Habit[]
+  ingredients      Ingredient[]
+  recipes          Recipe[]
+  meals            Meal[]
+  mealTemplates    MealTemplate[]
+  nutritionTargets NutritionTarget[]
+  workoutPrograms  WorkoutProgram[]
+  customExercises  Exercise[]
+  workoutSessions  WorkoutSession[]
+  personalRecords  PersonalRecord[]
+  weightEntries    WeightEntry[]
+  measurements     Measurement[]
+  chatConversations ChatConversation[]
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum WeightUnit {
+  KG
+  LB
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// GOALS
+// ─────────────────────────────────────────────────────────────────────────
+
+model Goal {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       GoalType
+  startValue Float
+  targetValue Float
+  startDate  DateTime
+  targetDate DateTime?
+  status     GoalStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([userId, type, status])
+}
+
+enum GoalType {
+  WEIGHT
+  BODY_FAT_PERCENT
+}
+
+enum GoalStatus {
+  ACTIVE
+  ACHIEVED
+  ABANDONED
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// HABITS
+// ─────────────────────────────────────────────────────────────────────────
+
+model Habit {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+
+  logs HabitLog[]
+
+  @@index([userId, isActive])
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, date])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// NUTRITION
+// ─────────────────────────────────────────────────────────────────────────
+
+model Ingredient {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  caloriesPer100g Float
+  proteinPer100g  Float
+  carbsPer100g    Float
+  fatPer100g      Float
+  createdAt       DateTime @default(now())
+
+  recipeIngredients     RecipeIngredient[]
+  mealItems             MealItem[]
+  mealTemplateItems     MealTemplateItem[]
+
+  @@index([userId, name])
+}
+
+model Recipe {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  servings     Int      @default(1)
+  instructions String?
+  createdAt    DateTime @default(now())
+
+  ingredients        RecipeIngredient[]
+  mealItems          MealItem[]
+  mealTemplateItems  MealTemplateItem[]
+
+  @@index([userId, name])
+}
+
+model RecipeIngredient {
+  id            String     @id @default(cuid())
+  recipeId      String
+  recipe        Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredientId  String
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  quantityGrams Float
+
+  @@index([recipeId])
+}
+
+model Meal {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  mealType  MealType
+  name      String?
+  createdAt DateTime @default(now())
+
+  items MealItem[]
+
+  @@index([userId, date])
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+// Exactly one of recipeId / ingredientId is set — enforced in the application layer.
+model MealItem {
+  id           String      @id @default(cuid())
+  mealId       String
+  meal         Meal        @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  recipeId     String?
+  recipe       Recipe?     @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  ingredientId String?
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  quantity     Float       // servings if recipe, grams if ingredient
+
+  @@index([mealId])
+}
+
+model MealTemplate {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+
+  items MealTemplateItem[]
+
+  @@index([userId, name])
+}
+
+// Same one-of-two-FKs rule as MealItem.
+model MealTemplateItem {
+  id           String       @id @default(cuid())
+  templateId   String
+  template     MealTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  recipeId     String?
+  recipe       Recipe?      @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  ingredientId String?
+  ingredient   Ingredient?  @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  quantity     Float
+  mealType     MealType
+
+  @@index([templateId])
+}
+
+model NutritionTarget {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calories      Int
+  proteinGrams  Int
+  carbsGrams    Int
+  fatGrams      Int
+  effectiveFrom DateTime @db.Date
+  createdAt     DateTime @default(now())
+
+  @@index([userId, effectiveFrom])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// TRAINING
+// ─────────────────────────────────────────────────────────────────────────
+
+model WorkoutProgram {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  days     WorkoutDay[]
+  sessions WorkoutSession[]
+
+  @@index([userId, isActive])
+}
+
+model WorkoutDay {
+  id        String         @id @default(cuid())
+  programId String
+  program   WorkoutProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name      String
+  dayOrder  Int
+  createdAt DateTime       @default(now())
+
+  exercises WorkoutDayExercise[]
+  sessions  WorkoutSession[]
+
+  @@index([programId, dayOrder])
+}
+
+model Exercise {
+  id           String   @id @default(cuid())
+  userId       String?  // null = global seeded catalog exercise
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  muscleGroup  String
+  equipment    String?
+  createdAt    DateTime @default(now())
+
+  workoutDayExercises WorkoutDayExercise[]
+  setLogs             SetLog[]
+  personalRecords     PersonalRecord[]
+
+  @@index([userId, name])
+}
+
+model WorkoutDayExercise {
+  id            String     @id @default(cuid())
+  workoutDayId  String
+  workoutDay    WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  exerciseId    String
+  exercise      Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  order         Int
+  targetSets    Int
+  targetRepsMin Int
+  targetRepsMax Int
+  restSeconds   Int?
+
+  @@index([workoutDayId, order])
+}
+
+model WorkoutSession {
+  id           String          @id @default(cuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programId    String?
+  program      WorkoutProgram? @relation(fields: [programId], references: [id], onDelete: SetNull)
+  workoutDayId String?
+  workoutDay   WorkoutDay?     @relation(fields: [workoutDayId], references: [id], onDelete: SetNull)
+  date         DateTime        @db.Date
+  startedAt    DateTime?
+  completedAt  DateTime?
+  notes        String?
+  createdAt    DateTime        @default(now())
+
+  setLogs SetLog[]
+
+  @@index([userId, date])
+}
+
+model SetLog {
+  id               String         @id @default(cuid())
+  workoutSessionId String
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exerciseId       String
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  setNumber        Int
+  reps             Int
+  weightKg         Float
+  rpe              Float?
+  isWarmup         Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+
+  @@index([workoutSessionId])
+  @@index([exerciseId])
+}
+
+model PersonalRecord {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId  String
+  exercise    Exercise  @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  type        PrType
+  value       Float
+  achievedAt  DateTime
+
+  @@unique([userId, exerciseId, type])
+}
+
+enum PrType {
+  MAX_WEIGHT
+  ESTIMATED_1RM
+  MAX_VOLUME_SESSION
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// PROGRESS
+// ─────────────────────────────────────────────────────────────────────────
+
+model WeightEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  weightKg  Float
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+model Measurement {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  waistCm   Float?
+  neckCm    Float?
+  hipsCm    Float?
+  chestCm   Float?
+  armCm     Float?
+  thighCm   Float?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// AI COACH
+// ─────────────────────────────────────────────────────────────────────────
+
+model ChatConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  createdAt DateTime @default(now())
+
+  messages ChatMessage[]
+
+  @@index([userId, createdAt])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           ChatRole
+  content        String
+  toolCalls      Json?
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}

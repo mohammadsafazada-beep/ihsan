@@ -1,0 +1,16 @@
+{
+  "name": "@ihsan/config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "tsconfig",
+    "eslint-preset.js",
+    "prettier-preset.js"
+  ],
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "eslint-config-prettier": "^9.1.0"
+  }
+}
