@@ -8,6 +8,11 @@ on:
 
 env:
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/ihsan_test?schema=public"
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+  NEXT_PUBLIC_API_URL: "https://api-production-c647.up.railway.app/api/v1"
 
 jobs:
   ci:
