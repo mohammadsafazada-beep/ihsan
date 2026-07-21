@@ -8,9 +8,18 @@ import { UsersModule } from "./modules/users/users.module";
 import { NutritionModule } from "./modules/nutrition/nutrition.module";
 import { HabitsModule } from "./modules/habits/habits.module";
 import { GoalsModule } from "./modules/goals/goals.module";
+import { TrainingModule } from "./modules/training/training.module";
 
 @Module({
-  imports: [PrismaModule, HealthModule, UsersModule, NutritionModule, HabitsModule, GoalsModule],
+  imports: [
+    PrismaModule,
+    HealthModule,
+    UsersModule,
+    NutritionModule,
+    HabitsModule,
+    GoalsModule,
+    TrainingModule,
+  ],
   providers: [
     { provide: APP_FILTER, useClass: DomainExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseEnvelopeInterceptor },

@@ -269,6 +269,63 @@ const RECIPES: SeedRecipe[] = [
   },
 ];
 
+interface SeedExercise {
+  name: string;
+  muscleGroup: string;
+  equipment: string;
+}
+
+// Global catalog (userId: null) — visible to every user, editable/extendable per user via custom exercises.
+const EXERCISES: SeedExercise[] = [
+  // Chest
+  { name: "Bench Press", muscleGroup: "Chest", equipment: "Barbell" },
+  { name: "Incline Bench Press", muscleGroup: "Chest", equipment: "Barbell" },
+  { name: "Dumbbell Bench Press", muscleGroup: "Chest", equipment: "Dumbbell" },
+  { name: "Push-Up", muscleGroup: "Chest", equipment: "Bodyweight" },
+  { name: "Chest Fly", muscleGroup: "Chest", equipment: "Dumbbell" },
+  // Back
+  { name: "Deadlift", muscleGroup: "Back", equipment: "Barbell" },
+  { name: "Pull-Up", muscleGroup: "Back", equipment: "Bodyweight" },
+  { name: "Lat Pulldown", muscleGroup: "Back", equipment: "Cable" },
+  { name: "Barbell Row", muscleGroup: "Back", equipment: "Barbell" },
+  { name: "Seated Cable Row", muscleGroup: "Back", equipment: "Cable" },
+  { name: "T-Bar Row", muscleGroup: "Back", equipment: "Barbell" },
+  // Legs
+  { name: "Squat", muscleGroup: "Legs", equipment: "Barbell" },
+  { name: "Front Squat", muscleGroup: "Legs", equipment: "Barbell" },
+  { name: "Leg Press", muscleGroup: "Legs", equipment: "Machine" },
+  { name: "Lunges", muscleGroup: "Legs", equipment: "Dumbbell" },
+  { name: "Romanian Deadlift", muscleGroup: "Legs", equipment: "Barbell" },
+  { name: "Leg Curl", muscleGroup: "Legs", equipment: "Machine" },
+  { name: "Leg Extension", muscleGroup: "Legs", equipment: "Machine" },
+  { name: "Calf Raise", muscleGroup: "Legs", equipment: "Machine" },
+  // Shoulders
+  { name: "Overhead Press", muscleGroup: "Shoulders", equipment: "Barbell" },
+  { name: "Dumbbell Shoulder Press", muscleGroup: "Shoulders", equipment: "Dumbbell" },
+  { name: "Lateral Raise", muscleGroup: "Shoulders", equipment: "Dumbbell" },
+  { name: "Front Raise", muscleGroup: "Shoulders", equipment: "Dumbbell" },
+  { name: "Face Pull", muscleGroup: "Shoulders", equipment: "Cable" },
+  // Arms
+  { name: "Barbell Curl", muscleGroup: "Arms", equipment: "Barbell" },
+  { name: "Dumbbell Curl", muscleGroup: "Arms", equipment: "Dumbbell" },
+  { name: "Hammer Curl", muscleGroup: "Arms", equipment: "Dumbbell" },
+  { name: "Tricep Pushdown", muscleGroup: "Arms", equipment: "Cable" },
+  { name: "Skull Crusher", muscleGroup: "Arms", equipment: "Barbell" },
+  { name: "Dips", muscleGroup: "Arms", equipment: "Bodyweight" },
+  // Core
+  { name: "Plank", muscleGroup: "Core", equipment: "Bodyweight" },
+  { name: "Hanging Leg Raise", muscleGroup: "Core", equipment: "Bodyweight" },
+  { name: "Cable Crunch", muscleGroup: "Core", equipment: "Cable" },
+  { name: "Russian Twist", muscleGroup: "Core", equipment: "Bodyweight" },
+  { name: "Ab Wheel Rollout", muscleGroup: "Core", equipment: "Bodyweight" },
+  // Full body / Olympic
+  { name: "Clean", muscleGroup: "Full Body", equipment: "Barbell" },
+  { name: "Snatch", muscleGroup: "Full Body", equipment: "Barbell" },
+  { name: "Kettlebell Swing", muscleGroup: "Full Body", equipment: "Kettlebell" },
+  { name: "Farmer's Carry", muscleGroup: "Full Body", equipment: "Dumbbell" },
+  { name: "Burpee", muscleGroup: "Full Body", equipment: "Bodyweight" },
+];
+
 async function main() {
   const user = await prisma.user.findFirst();
   if (!user) {
@@ -334,6 +391,19 @@ async function main() {
   console.log(
     `Created ${recipesCreated} new recipes, updated ${recipesUpdated} existing ones ` +
       `(${RECIPES.length - recipesCreated - recipesUpdated} already up to date).`,
+  );
+
+  let exercisesCreated = 0;
+  for (const exercise of EXERCISES) {
+    const existing = await prisma.exercise.findFirst({
+      where: { userId: null, name: exercise.name },
+    });
+    if (existing) continue;
+    await prisma.exercise.create({ data: { userId: null, ...exercise } });
+    exercisesCreated++;
+  }
+  console.log(
+    `Created ${exercisesCreated} new global exercises (${EXERCISES.length - exercisesCreated} already existed).`,
   );
 }
 

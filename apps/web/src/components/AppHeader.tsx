@@ -4,6 +4,7 @@ import { UserButton } from "@clerk/nextjs";
 const NAV_LINKS = [
   { href: "/", label: "Dashboard" },
   { href: "/nutrition", label: "Nutrition" },
+  { href: "/training", label: "Training" },
 ];
 
 export function AppHeader() {

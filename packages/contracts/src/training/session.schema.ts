@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { calendarDateSchema } from "../common/date.schema";
+import { setLogSchema } from "./set-log.schema";
 
 export const createSessionSchema = z.object({
   date: calendarDateSchema,
@@ -24,6 +25,7 @@ export const sessionSchema = z.object({
   startedAt: z.string().datetime().nullable(),
   completedAt: z.string().datetime().nullable(),
   notes: z.string().nullable(),
+  setLogs: z.array(setLogSchema),
   createdAt: z.string().datetime(),
 });
 export type Session = z.infer<typeof sessionSchema>;
