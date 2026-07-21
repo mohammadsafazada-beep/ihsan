@@ -5,6 +5,8 @@ import {
   updateMealSchema,
   UpdateMealInput,
   calendarDateSchema,
+  saveMealAsTemplateSchema,
+  SaveMealAsTemplateInput,
 } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -15,7 +17,8 @@ import { LogMealUseCase } from "../application/use-cases/log-meal.use-case";
 import { UpdateMealUseCase } from "../application/use-cases/update-meal.use-case";
 import { DeleteMealUseCase } from "../application/use-cases/delete-meal.use-case";
 import { ListMealsByDateUseCase } from "../application/use-cases/list-meals-by-date.use-case";
-import { toMealDto } from "./nutrition.mapper";
+import { SaveMealAsTemplateUseCase } from "../application/use-cases/save-meal-as-template.use-case";
+import { toMealDto, toMealTemplateDto } from "./nutrition.mapper";
 
 @Controller("meals")
 @UseGuards(ClerkAuthGuard, ResolveCurrentUserGuard)
@@ -25,6 +28,7 @@ export class MealController {
     private readonly updateMeal: UpdateMealUseCase,
     private readonly deleteMeal: DeleteMealUseCase,
     private readonly listMealsByDate: ListMealsByDateUseCase,
+    private readonly saveMealAsTemplate: SaveMealAsTemplateUseCase,
   ) {}
 
   @Get()
@@ -54,5 +58,16 @@ export class MealController {
   async delete(@CurrentUser() user: UserEntity, @Param("id") id: string) {
     await this.deleteMeal.execute(id, user.id);
     return { deleted: true };
+  }
+
+  @Post(":id/save-as-template")
+  @UsePipes(new ZodValidationPipe(saveMealAsTemplateSchema))
+  async saveAsTemplate(
+    @CurrentUser() user: UserEntity,
+    @Param("id") id: string,
+    @Body() body: SaveMealAsTemplateInput,
+  ) {
+    const template = await this.saveMealAsTemplate.execute(id, user.id, body);
+    return toMealTemplateDto(template);
   }
 }

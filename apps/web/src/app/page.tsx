@@ -1,5 +1,10 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppHeader } from "@/components/AppHeader";
+import { HabitsList } from "@/features/habits/components/HabitsList";
+import { HabitForm } from "@/features/habits/components/HabitForm";
+import { WeightGoalCard } from "@/features/goals/components/WeightGoalCard";
 
 export default function DashboardPage() {
   return (
@@ -11,16 +16,34 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>No data yet</CardTitle>
+            <CardTitle>Weight goal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <WeightGoalCard />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Today&apos;s habits</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <HabitsList />
+            <HabitForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Nutrition</CardTitle>
           </CardHeader>
           <CardContent className="text-text-secondary">
-            Training, Progress, Habits, Goals, and the AI Coach land in the upcoming sprints (see{" "}
-            <code>docs/05-development-roadmap.md</code>). Nutrition is live —{" "}
+            Training, Progress, and the AI Coach land in upcoming sprints (see{" "}
+            <code>docs/05-development-roadmap.md</code>). Head to{" "}
             <a href="/nutrition" className="text-brand underline">
-              log a meal
-            </a>
-            . This screen will show today&apos;s workout, calories remaining, today&apos;s meals and
-            habits, current vs. goal weight, and weekly progress as each module ships.
+              Nutrition
+            </a>{" "}
+            to log meals and manage recipes.
           </CardContent>
         </Card>
       </main>

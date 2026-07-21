@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
 import { todayDateString } from "@/lib/utils";
 import { MacrosSummaryCard } from "@/features/nutrition/components/MacrosSummaryCard";
+import { NutritionTargetForm } from "@/features/nutrition/components/NutritionTargetForm";
 import { MealsList } from "@/features/nutrition/components/MealsList";
 import { QuickLogMeals } from "@/features/nutrition/components/QuickLogMeals";
 import { LogMealForm } from "@/features/nutrition/components/LogMealForm";
+import { MealTemplatesList } from "@/features/nutrition/components/MealTemplatesList";
 import { RecipeForm } from "@/features/nutrition/components/RecipeForm";
 import { RecipesList } from "@/features/nutrition/components/RecipesList";
 import { IngredientForm } from "@/features/nutrition/components/IngredientForm";
@@ -30,6 +32,15 @@ export default function NutritionPage() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Daily target</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NutritionTargetForm />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Today&apos;s meals</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -47,6 +58,15 @@ export default function NutritionPage() {
             {showCustomLog && <LogMealForm date={date} />}
 
             <MealsList date={date} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Meal templates</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MealTemplatesList date={date} />
           </CardContent>
         </Card>
 

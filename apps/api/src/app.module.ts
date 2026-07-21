@@ -6,9 +6,11 @@ import { ResponseEnvelopeInterceptor } from "./shared/interceptors/response-enve
 import { HealthModule } from "./modules/health/health.module";
 import { UsersModule } from "./modules/users/users.module";
 import { NutritionModule } from "./modules/nutrition/nutrition.module";
+import { HabitsModule } from "./modules/habits/habits.module";
+import { GoalsModule } from "./modules/goals/goals.module";
 
 @Module({
-  imports: [PrismaModule, HealthModule, UsersModule, NutritionModule],
+  imports: [PrismaModule, HealthModule, UsersModule, NutritionModule, HabitsModule, GoalsModule],
   providers: [
     { provide: APP_FILTER, useClass: DomainExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseEnvelopeInterceptor },

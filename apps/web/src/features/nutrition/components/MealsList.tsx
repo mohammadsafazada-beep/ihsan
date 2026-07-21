@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useDeleteMeal, useMeals } from "../api/meals.api";
+import { SaveAsTemplateButton } from "./SaveAsTemplateButton";
 
 export function MealsList({ date }: { date: string }) {
   const { data: meals, isLoading } = useMeals(date);
@@ -32,15 +33,21 @@ export function MealsList({ date }: { date: string }) {
               {meal.macrosTotal.carbsGrams}g carbs · {meal.macrosTotal.fatGrams}g fat
             </p>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={deleteMeal.isPending}
-            onClick={() => deleteMeal.mutate(meal.id)}
-          >
-            Delete
-          </Button>
+          <div className="flex items-center gap-1">
+            <SaveAsTemplateButton
+              mealId={meal.id}
+              defaultName={meal.items.map((item) => item.label).join(" + ")}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={deleteMeal.isPending}
+              onClick={() => deleteMeal.mutate(meal.id)}
+            >
+              Delete
+            </Button>
+          </div>
         </li>
       ))}
     </ul>

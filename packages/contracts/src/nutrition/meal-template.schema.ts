@@ -28,3 +28,21 @@ export const saveMealAsTemplateSchema = z.object({
   name: z.string().min(1).max(120),
 });
 export type SaveMealAsTemplateInput = z.infer<typeof saveMealAsTemplateSchema>;
+
+export const mealTemplateSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  name: z.string(),
+  items: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+      quantity: z.number(),
+      mealType: mealTypeSchema,
+      recipeId: z.string().nullable(),
+      ingredientId: z.string().nullable(),
+    }),
+  ),
+  createdAt: z.string().datetime(),
+});
+export type MealTemplate = z.infer<typeof mealTemplateSchema>;

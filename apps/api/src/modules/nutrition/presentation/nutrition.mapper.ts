@@ -1,7 +1,8 @@
-import type { Ingredient, Meal, Recipe } from "@ihsan/contracts";
+import type { Ingredient, Meal, MealTemplate, Recipe } from "@ihsan/contracts";
 import { IngredientEntity } from "../domain/entities/ingredient.entity";
 import { RecipeEntity } from "../domain/entities/recipe.entity";
 import { MealEntity } from "../domain/entities/meal.entity";
+import { MealTemplateEntity } from "../domain/entities/meal-template.entity";
 
 export function toIngredientDto(entity: IngredientEntity): Ingredient {
   return {
@@ -32,6 +33,23 @@ export function toRecipeDto(entity: RecipeEntity): Recipe {
     })),
     macrosPerServing: entity.getMacrosPerServing(),
     macrosTotal: entity.getTotalMacros(),
+    createdAt: entity.createdAt.toISOString(),
+  };
+}
+
+export function toMealTemplateDto(entity: MealTemplateEntity): MealTemplate {
+  return {
+    id: entity.id,
+    userId: entity.userId,
+    name: entity.name,
+    items: entity.items.map((item) => ({
+      id: item.id,
+      label: item.label,
+      quantity: item.quantity,
+      mealType: item.mealType,
+      recipeId: item.recipeId,
+      ingredientId: item.ingredientId,
+    })),
     createdAt: entity.createdAt.toISOString(),
   };
 }
