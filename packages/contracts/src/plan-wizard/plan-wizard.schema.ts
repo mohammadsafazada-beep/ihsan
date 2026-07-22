@@ -83,24 +83,6 @@ export const proposedPlanSchema = z.object({
 });
 export type ProposedPlan = z.infer<typeof proposedPlanSchema>;
 
-export const wizardChatMessageSchema = z.object({
-  role: z.enum(["user", "assistant"]),
-  content: z.string(),
-});
-export type WizardChatMessage = z.infer<typeof wizardChatMessageSchema>;
-
-export const wizardChatRequestSchema = z.object({
-  history: z.array(wizardChatMessageSchema),
-  content: z.string().min(1).max(2000),
-});
-export type WizardChatRequest = z.infer<typeof wizardChatRequestSchema>;
-
-export const wizardChatResponseSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("question"), message: z.string(), history: z.array(wizardChatMessageSchema) }),
-  z.object({ type: z.literal("proposal"), plan: proposedPlanSchema, history: z.array(wizardChatMessageSchema) }),
-]);
-export type WizardChatResponse = z.infer<typeof wizardChatResponseSchema>;
-
 export const selectedMealRecipesSchema = z.object({
   breakfast: z.string().optional(),
   lunch: z.string().optional(),

@@ -9,20 +9,10 @@ import { PlanWizardController } from "./presentation/plan-wizard.controller";
 
 import { GeneratePlanUseCase } from "./application/use-cases/generate-plan.use-case";
 import { ApplyPlanUseCase } from "./application/use-cases/apply-plan.use-case";
-import { ProcessWizardMessageUseCase } from "./application/use-cases/process-wizard-message.use-case";
-
-import { LLM_CLIENT } from "../ai-coach/application/ports/llm-client.port";
-import { OpenRouterLlmClient } from "../ai-coach/infrastructure/llm/openrouter-llm-client";
 
 @Module({
   imports: [UsersModule, TrainingModule, NutritionModule, GoalsModule],
   controllers: [PlanWizardController],
-  providers: [
-    ResolveCurrentUserGuard,
-    GeneratePlanUseCase,
-    ApplyPlanUseCase,
-    ProcessWizardMessageUseCase,
-    { provide: LLM_CLIENT, useClass: OpenRouterLlmClient },
-  ],
+  providers: [ResolveCurrentUserGuard, GeneratePlanUseCase, ApplyPlanUseCase],
 })
 export class PlanWizardModule {}

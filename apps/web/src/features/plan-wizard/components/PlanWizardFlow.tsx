@@ -2,28 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { ProposedPlan, WizardChatMessage } from "@ihsan/contracts";
+import type { PlanIntake, ProposedPlan } from "@ihsan/contracts";
 import { Button } from "@/components/ui/button";
-import { WizardChat } from "./WizardChat";
+import { PlanIntakeForm } from "./PlanIntakeForm";
 import { PlanPreview } from "./PlanPreview";
+import { useGeneratePlan } from "../api/wizard.api";
 
-type Phase = "chat" | "proposal" | "applied";
+type Phase = "form" | "proposal" | "applied";
 
 export function PlanWizardFlow({ onApplied }: { onApplied?: () => void }) {
-  const [phase, setPhase] = useState<Phase>("chat");
+  const [phase, setPhase] = useState<Phase>("form");
   const [plan, setPlan] = useState<ProposedPlan | null>(null);
-  const [history, setHistory] = useState<WizardChatMessage[] | undefined>(undefined);
-  const [chatKey, setChatKey] = useState(0);
+  const [lastIntake, setLastIntake] = useState<PlanIntake | undefined>(undefined);
+  const generatePlan = useGeneratePlan();
 
-  function handleProposal(newPlan: ProposedPlan, newHistory: WizardChatMessage[]) {
-    setPlan(newPlan);
-    setHistory(newHistory);
-    setPhase("proposal");
+  function handleSubmit(intake: PlanIntake) {
+    setLastIntake(intake);
+    generatePlan.mutate(intake, {
+      onSuccess: (proposedPlan) => {
+        setPlan(proposedPlan);
+        setPhase("proposal");
+      },
+    });
   }
 
   function handleAdjust() {
-    setChatKey((key) => key + 1);
-    setPhase("chat");
+    setPhase("form");
   }
 
   function handleApplied() {
@@ -31,8 +35,15 @@ export function PlanWizardFlow({ onApplied }: { onApplied?: () => void }) {
     onApplied?.();
   }
 
-  if (phase === "chat") {
-    return <WizardChat key={chatKey} initialHistory={history} onProposal={handleProposal} />;
+  if (phase === "form") {
+    return (
+      <div className="flex flex-col gap-3">
+        <PlanIntakeForm defaultValues={lastIntake} isSubmitting={generatePlan.isPending} onSubmit={handleSubmit} />
+        {generatePlan.isError && (
+          <p className="text-caption text-destructive">Couldn&apos;t build your plan — try again.</p>
+        )}
+      </div>
+    );
   }
 
   if (phase === "proposal" && plan) {

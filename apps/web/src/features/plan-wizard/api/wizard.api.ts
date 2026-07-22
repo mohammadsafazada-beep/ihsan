@@ -1,14 +1,14 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ApplyPlanRequest, ApplyPlanResult, WizardChatRequest, WizardChatResponse } from "@ihsan/contracts";
+import type { ApplyPlanRequest, ApplyPlanResult, PlanIntake, ProposedPlan } from "@ihsan/contracts";
 import { useAuthedApi } from "@/lib/use-authed-api";
 
-export function useSendWizardMessage() {
+export function useGeneratePlan() {
   const api = useAuthedApi();
   return useMutation({
-    mutationFn: (input: WizardChatRequest) =>
-      api<WizardChatResponse>("/plan-wizard/chat", { method: "POST", body: JSON.stringify(input) }),
+    mutationFn: (input: PlanIntake) =>
+      api<ProposedPlan>("/plan-wizard/generate", { method: "POST", body: JSON.stringify(input) }),
   });
 }
 

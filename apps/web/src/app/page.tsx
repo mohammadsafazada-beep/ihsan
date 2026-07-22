@@ -44,7 +44,7 @@ export default function HomePage() {
           </p>
           <Card className="flex flex-1 flex-col">
             <CardHeader>
-              <CardTitle>Talk to your coach</CardTitle>
+              <CardTitle>Tell us about yourself</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col">
               <PlanWizardFlow />
