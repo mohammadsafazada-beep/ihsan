@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
 import { createProgramSchema, CreateProgramInput, updateProgramSchema, UpdateProgramInput } from "@ihsan/contracts";
+import { z } from "zod";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
 import { CurrentUser } from "../../../shared/decorators/current-user.decorator";
@@ -9,7 +10,10 @@ import { CreateProgramUseCase } from "../application/use-cases/create-program.us
 import { UpdateProgramUseCase } from "../application/use-cases/update-program.use-case";
 import { ListProgramsUseCase } from "../application/use-cases/list-programs.use-case";
 import { ActivateProgramUseCase } from "../application/use-cases/activate-program.use-case";
+import { GetNextSuggestionUseCase } from "../application/use-cases/get-next-suggestion.use-case";
 import { toProgramDto } from "./training.mapper";
+
+const exerciseIdQuerySchema = z.string().min(1);
 
 @Controller("programs")
 @UseGuards(ClerkAuthGuard, ResolveCurrentUserGuard)
@@ -19,6 +23,7 @@ export class ProgramController {
     private readonly updateProgram: UpdateProgramUseCase,
     private readonly listPrograms: ListProgramsUseCase,
     private readonly activateProgram: ActivateProgramUseCase,
+    private readonly getNextSuggestion: GetNextSuggestionUseCase,
   ) {}
 
   @Get()
@@ -45,5 +50,15 @@ export class ProgramController {
   async activate(@CurrentUser() user: UserEntity, @Param("id") id: string) {
     const program = await this.activateProgram.execute(id, user.id);
     return toProgramDto(program);
+  }
+
+  @Get(":id/days/:dayId/next-suggestion")
+  async nextSuggestion(
+    @CurrentUser() user: UserEntity,
+    @Param("id") programId: string,
+    @Param("dayId") dayId: string,
+    @Query("exerciseId", new ZodValidationPipe(exerciseIdQuerySchema)) exerciseId: string,
+  ) {
+    return this.getNextSuggestion.execute(user.id, programId, dayId, exerciseId);
   }
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { calendarDateSchema } from "../common/date.schema";
 
 export const createExerciseSchema = z.object({
   name: z.string().min(1).max(120),
@@ -13,3 +14,14 @@ export const exerciseSchema = createExerciseSchema.extend({
   createdAt: z.string().datetime(),
 });
 export type Exercise = z.infer<typeof exerciseSchema>;
+
+export const exerciseHistoryEntrySchema = z.object({
+  workoutSessionId: z.string(),
+  date: calendarDateSchema,
+  setNumber: z.number().int(),
+  reps: z.number().int(),
+  weightKg: z.number(),
+  rpe: z.number().optional(),
+  isWarmup: z.boolean(),
+});
+export type ExerciseHistoryEntry = z.infer<typeof exerciseHistoryEntrySchema>;

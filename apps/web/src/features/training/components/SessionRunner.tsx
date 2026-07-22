@@ -12,12 +12,88 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useExercises } from "../api/exercises.api";
+import { usePrograms } from "../api/programs.api";
 import { useCreateSession, useDeleteSet, useLogSet, useSessionsForDate } from "../api/sessions.api";
+import { useNextSuggestion } from "../api/suggestions.api";
+
+function StartSessionForm({ date }: { date: string }) {
+  const { data: programs } = usePrograms();
+  const createSession = useCreateSession(date);
+  const activeProgram = programs?.find((p) => p.isActive);
+  const [dayId, setDayId] = useState<string>("");
+
+  return (
+    <div className="flex flex-wrap items-end gap-3">
+      {activeProgram && activeProgram.days.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <Label>Workout day (optional)</Label>
+          <Select value={dayId} onValueChange={setDayId}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Freestyle session" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeProgram.days.map((day) => (
+                <SelectItem key={day.id} value={day.id}>
+                  {day.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      <Button
+        type="button"
+        onClick={() =>
+          createSession.mutate({
+            date,
+            programId: dayId ? activeProgram?.id : undefined,
+            workoutDayId: dayId || undefined,
+          })
+        }
+        disabled={createSession.isPending}
+      >
+        {createSession.isPending ? "Starting..." : "Start today's session"}
+      </Button>
+    </div>
+  );
+}
+
+function SuggestionHint({
+  programId,
+  workoutDayId,
+  exerciseId,
+  onUseSuggestion,
+}: {
+  programId: string;
+  workoutDayId: string;
+  exerciseId: string;
+  onUseSuggestion: (weightKg: number) => void;
+}) {
+  const { data: suggestion, isLoading } = useNextSuggestion(programId, workoutDayId, exerciseId);
+
+  if (isLoading || !suggestion) return null;
+
+  return (
+    <div className="flex items-center gap-2 text-caption text-text-secondary">
+      <span>{suggestion.reason}</span>
+      {suggestion.suggestedWeightKg !== null && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onUseSuggestion(suggestion.suggestedWeightKg!)}
+        >
+          Use {suggestion.suggestedWeightKg}kg
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export function SessionRunner({ date }: { date: string }) {
   const { data: sessions, isLoading } = useSessionsForDate(date);
   const { data: exercises } = useExercises();
-  const createSession = useCreateSession(date);
+  const { data: programs } = usePrograms();
   const logSet = useLogSet(date);
   const deleteSet = useDeleteSet(date);
 
@@ -27,6 +103,11 @@ export function SessionRunner({ date }: { date: string }) {
   const [rpe, setRpe] = useState("");
 
   const session = sessions?.[0];
+  const activeProgram = programs?.find((p) => p.isActive);
+  const day = session?.workoutDayId
+    ? activeProgram?.days.find((d) => d.id === session.workoutDayId)
+    : undefined;
+  const prescribedExerciseIds = new Set(day?.exercises.map((e) => e.exerciseId) ?? []);
 
   function handleLogSet(event: React.FormEvent) {
     event.preventDefault();
@@ -51,11 +132,7 @@ export function SessionRunner({ date }: { date: string }) {
   if (isLoading) return <p className="text-text-secondary">Loading today&apos;s session...</p>;
 
   if (!session) {
-    return (
-      <Button type="button" onClick={() => createSession.mutate({ date })} disabled={createSession.isPending}>
-        {createSession.isPending ? "Starting..." : "Start today's session"}
-      </Button>
-    );
+    return <StartSessionForm date={date} />;
   }
 
   const exerciseName = (id: string) => exercises?.find((e) => e.id === id)?.name ?? "Unknown";
@@ -73,6 +150,7 @@ export function SessionRunner({ date }: { date: string }) {
               {exercises?.map((exercise) => (
                 <SelectItem key={exercise.id} value={exercise.id}>
                   {exercise.name}
+                  {prescribedExerciseIds.has(exercise.id) ? " ★" : ""}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -107,6 +185,15 @@ export function SessionRunner({ date }: { date: string }) {
           {logSet.isPending ? "Logging..." : "Log set"}
         </Button>
       </form>
+
+      {session.programId && session.workoutDayId && exerciseId && prescribedExerciseIds.has(exerciseId) && (
+        <SuggestionHint
+          programId={session.programId}
+          workoutDayId={session.workoutDayId}
+          exerciseId={exerciseId}
+          onUseSuggestion={(weight) => setWeightKg(String(weight))}
+        />
+      )}
 
       {session.setLogs.length === 0 ? (
         <p className="text-text-secondary">No sets logged yet.</p>

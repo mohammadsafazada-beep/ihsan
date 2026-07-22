@@ -1,13 +1,30 @@
 import { CreateSessionInput, LogSetInput, UpdateSetInput } from "@ihsan/contracts";
 import { NotFoundError } from "../../../../shared/errors/domain-errors";
 import { WorkoutSessionEntity } from "../../domain/entities/workout-session.entity";
-import { SessionRepositoryPort, SetLogRecord } from "../ports/session.repository.port";
+import {
+  SessionRepositoryPort,
+  SetHistoryEntry,
+  SetLogRecord,
+  SetOwnership,
+} from "../ports/session.repository.port";
+import {
+  PersonalRecordEntry,
+  PersonalRecordRepositoryPort,
+} from "../ports/personal-record.repository.port";
+import { RecalculatePersonalRecordsUseCase } from "./recalculate-personal-records.use-case";
 import { UpdateSetUseCase } from "./update-set.use-case";
+
+class FakePersonalRecordRepository implements PersonalRecordRepositoryPort {
+  async replaceForExercise(): Promise<void> {}
+  async findManyByUser(): Promise<PersonalRecordEntry[]> {
+    return [];
+  }
+}
 
 class FakeSessionRepository implements SessionRepositoryPort {
   public updateSetCalls: { setId: string; input: UpdateSetInput }[] = [];
 
-  constructor(private readonly setOwners: Record<string, string>) {}
+  constructor(private readonly setOwners: Record<string, SetOwnership>) {}
 
   async create(_userId: string, _input: CreateSessionInput): Promise<WorkoutSessionEntity> {
     throw new Error("not needed for this test");
@@ -24,8 +41,16 @@ class FakeSessionRepository implements SessionRepositoryPort {
   async addSet(_sessionId: string, _input: LogSetInput): Promise<SetLogRecord> {
     throw new Error("not needed for this test");
   }
-  async findSetOwnerUserId(setId: string): Promise<string | null> {
+  async findSetOwnership(setId: string): Promise<SetOwnership | null> {
     return this.setOwners[setId] ?? null;
+  }
+  async findSetHistoryForExercise(): Promise<SetHistoryEntry[]> {
+    return [];
+  }
+  async findLastSessionSetsForWorkoutDayExercise(): Promise<
+    { reps: number; weightKg: number; isWarmup: boolean }[] | null
+  > {
+    throw new Error("not needed for this test");
   }
   async updateSet(setId: string, input: UpdateSetInput): Promise<SetLogRecord> {
     this.updateSetCalls.push({ setId, input });
@@ -46,10 +71,15 @@ class FakeSessionRepository implements SessionRepositoryPort {
   }
 }
 
+function makeUseCase(repo: FakeSessionRepository): UpdateSetUseCase {
+  const recalculate = new RecalculatePersonalRecordsUseCase(repo, new FakePersonalRecordRepository());
+  return new UpdateSetUseCase(repo, recalculate);
+}
+
 describe("UpdateSetUseCase", () => {
   it("updates a set that belongs to the requesting user", async () => {
-    const repo = new FakeSessionRepository({ "set-1": "user-1" });
-    const useCase = new UpdateSetUseCase(repo);
+    const repo = new FakeSessionRepository({ "set-1": { userId: "user-1", exerciseId: "exercise-1" } });
+    const useCase = makeUseCase(repo);
 
     const result = await useCase.execute("set-1", "user-1", { reps: 12 });
 
@@ -58,8 +88,10 @@ describe("UpdateSetUseCase", () => {
   });
 
   it("refuses to update a set that belongs to a different user", async () => {
-    const repo = new FakeSessionRepository({ "set-1": "someone-else" });
-    const useCase = new UpdateSetUseCase(repo);
+    const repo = new FakeSessionRepository({
+      "set-1": { userId: "someone-else", exerciseId: "exercise-1" },
+    });
+    const useCase = makeUseCase(repo);
 
     await expect(useCase.execute("set-1", "user-1", { reps: 12 })).rejects.toThrow(NotFoundError);
     expect(repo.updateSetCalls).toHaveLength(0);
@@ -67,7 +99,7 @@ describe("UpdateSetUseCase", () => {
 
   it("refuses to update a set that doesn't exist", async () => {
     const repo = new FakeSessionRepository({});
-    const useCase = new UpdateSetUseCase(repo);
+    const useCase = makeUseCase(repo);
 
     await expect(useCase.execute("does-not-exist", "user-1", { reps: 12 })).rejects.toThrow(NotFoundError);
   });

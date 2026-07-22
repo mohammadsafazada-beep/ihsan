@@ -1,7 +1,8 @@
-import type { Exercise, Program, Session } from "@ihsan/contracts";
+import type { Exercise, PersonalRecord, Program, Session } from "@ihsan/contracts";
 import { ExerciseEntity } from "../domain/entities/exercise.entity";
 import { ProgramEntity } from "../domain/entities/program.entity";
 import { WorkoutSessionEntity } from "../domain/entities/workout-session.entity";
+import { PersonalRecordEntry } from "../application/ports/personal-record.repository.port";
 
 export function toExerciseDto(entity: ExerciseEntity): Exercise {
   return {
@@ -36,6 +37,17 @@ export function toProgramDto(entity: ProgramEntity): Program {
       })),
     })),
     createdAt: entity.createdAt.toISOString(),
+  };
+}
+
+export function toPersonalRecordDto(entry: PersonalRecordEntry): PersonalRecord {
+  return {
+    id: entry.id,
+    exerciseId: entry.exerciseId,
+    exerciseName: entry.exerciseName,
+    type: entry.type,
+    value: entry.value,
+    achievedAt: entry.achievedAt.toISOString(),
   };
 }
 

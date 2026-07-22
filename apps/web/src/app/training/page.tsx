@@ -8,6 +8,7 @@ import { ProgramForm } from "@/features/training/components/ProgramForm";
 import { ProgramsList } from "@/features/training/components/ProgramsList";
 import { ExerciseForm } from "@/features/training/components/ExerciseForm";
 import { ExercisesList } from "@/features/training/components/ExercisesList";
+import { PersonalRecordsList } from "@/features/training/components/PersonalRecordsList";
 
 export default function TrainingPage() {
   const date = todayDateString();
@@ -24,6 +25,15 @@ export default function TrainingPage() {
           </CardHeader>
           <CardContent>
             <SessionRunner date={date} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Personal records</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PersonalRecordsList />
           </CardContent>
         </Card>
 

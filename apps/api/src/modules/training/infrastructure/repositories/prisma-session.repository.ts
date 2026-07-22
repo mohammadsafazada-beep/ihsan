@@ -5,7 +5,9 @@ import { PRISMA_CLIENT } from "../../../../shared/database/prisma.module";
 import { WorkoutSessionEntity } from "../../domain/entities/workout-session.entity";
 import {
   SessionRepositoryPort,
+  SetHistoryEntry,
   SetLogRecord,
+  SetOwnership,
 } from "../../application/ports/session.repository.port";
 
 const sessionWithSets = {
@@ -126,12 +128,12 @@ export class PrismaSessionRepository implements SessionRepositoryPort {
     return toSetRecord(set.id, set.workoutSessionId, set);
   }
 
-  async findSetOwnerUserId(setId: string): Promise<string | null> {
+  async findSetOwnership(setId: string): Promise<SetOwnership | null> {
     const set = await this.prisma.setLog.findUnique({
       where: { id: setId },
       include: { workoutSession: { select: { userId: true } } },
     });
-    return set?.workoutSession.userId ?? null;
+    return set ? { userId: set.workoutSession.userId, exerciseId: set.exerciseId } : null;
   }
 
   async updateSet(setId: string, input: UpdateSetInput): Promise<SetLogRecord> {
@@ -151,5 +153,40 @@ export class PrismaSessionRepository implements SessionRepositoryPort {
 
   async deleteSet(setId: string): Promise<void> {
     await this.prisma.setLog.delete({ where: { id: setId } });
+  }
+
+  async findSetHistoryForExercise(userId: string, exerciseId: string): Promise<SetHistoryEntry[]> {
+    const rows = await this.prisma.setLog.findMany({
+      where: { exerciseId, workoutSession: { userId } },
+      include: { workoutSession: { select: { date: true } } },
+      orderBy: { workoutSession: { date: "desc" } },
+    });
+    return rows.map((row) => ({
+      workoutSessionId: row.workoutSessionId,
+      date: row.workoutSession.date.toISOString().slice(0, 10),
+      setNumber: row.setNumber,
+      reps: row.reps,
+      weightKg: row.weightKg,
+      rpe: row.rpe,
+      isWarmup: row.isWarmup,
+    }));
+  }
+
+  async findLastSessionSetsForWorkoutDayExercise(
+    userId: string,
+    workoutDayId: string,
+    exerciseId: string,
+  ): Promise<{ reps: number; weightKg: number; isWarmup: boolean }[] | null> {
+    const lastSession = await this.prisma.workoutSession.findFirst({
+      where: { userId, workoutDayId, setLogs: { some: { exerciseId } } },
+      orderBy: { date: "desc" },
+      include: { setLogs: { where: { exerciseId } } },
+    });
+    if (!lastSession) return null;
+    return lastSession.setLogs.map((set) => ({
+      reps: set.reps,
+      weightKg: set.weightKg,
+      isWarmup: set.isWarmup,
+    }));
   }
 }
