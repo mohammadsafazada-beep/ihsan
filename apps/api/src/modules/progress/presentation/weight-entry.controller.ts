@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
 import { calendarDateSchema, logWeightSchema, LogWeightInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -30,8 +30,7 @@ export class WeightEntryController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(logWeightSchema))
-  async log(@CurrentUser() user: UserEntity, @Body() body: LogWeightInput) {
+  async log(@CurrentUser() user: UserEntity, @Body(new ZodValidationPipe(logWeightSchema)) body: LogWeightInput) {
     const entry = await this.logWeight.execute(user.id, body);
     return toWeightEntryDto(entry);
   }

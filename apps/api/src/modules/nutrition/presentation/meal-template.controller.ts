@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import {
   createMealTemplateSchema,
   CreateMealTemplateInput,
@@ -31,18 +31,19 @@ export class MealTemplateController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createMealTemplateSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateMealTemplateInput) {
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(createMealTemplateSchema)) body: CreateMealTemplateInput,
+  ) {
     const template = await this.createMealTemplate.execute(user.id, body);
     return toMealTemplateDto(template);
   }
 
   @Post(":id/apply")
-  @UsePipes(new ZodValidationPipe(applyMealTemplateSchema))
   async apply(
     @CurrentUser() user: UserEntity,
     @Param("id") id: string,
-    @Body() body: ApplyMealTemplateInput,
+    @Body(new ZodValidationPipe(applyMealTemplateSchema)) body: ApplyMealTemplateInput,
   ) {
     const meals = await this.applyMealTemplate.execute(id, user.id, body);
     return meals.map(toMealDto);

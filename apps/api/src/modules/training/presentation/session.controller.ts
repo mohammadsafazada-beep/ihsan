@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import {
   createSessionSchema,
   CreateSessionInput,
@@ -42,26 +42,30 @@ export class SessionController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createSessionSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateSessionInput) {
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(createSessionSchema)) body: CreateSessionInput,
+  ) {
     const session = await this.createSession.execute(user.id, body);
     return toSessionDto(session);
   }
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(updateSessionSchema))
   async update(
     @CurrentUser() user: UserEntity,
     @Param("id") id: string,
-    @Body() body: UpdateSessionInput,
+    @Body(new ZodValidationPipe(updateSessionSchema)) body: UpdateSessionInput,
   ) {
     const session = await this.updateSession.execute(id, user.id, body);
     return toSessionDto(session);
   }
 
   @Post(":id/sets")
-  @UsePipes(new ZodValidationPipe(logSetSchema))
-  async addSet(@CurrentUser() user: UserEntity, @Param("id") id: string, @Body() body: LogSetInput) {
+  async addSet(
+    @CurrentUser() user: UserEntity,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(logSetSchema)) body: LogSetInput,
+  ) {
     return this.logSet.execute(id, user.id, body);
   }
 }

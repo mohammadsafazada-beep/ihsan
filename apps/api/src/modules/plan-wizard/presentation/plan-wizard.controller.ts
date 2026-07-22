@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { applyPlanRequestSchema, ApplyPlanRequest, planIntakeSchema, PlanIntake } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -18,14 +18,15 @@ export class PlanWizardController {
   ) {}
 
   @Post("generate")
-  @UsePipes(new ZodValidationPipe(planIntakeSchema))
-  async generate(@CurrentUser() user: UserEntity, @Body() body: PlanIntake) {
+  async generate(@CurrentUser() user: UserEntity, @Body(new ZodValidationPipe(planIntakeSchema)) body: PlanIntake) {
     return this.generatePlan.execute(user.id, body);
   }
 
   @Post("apply")
-  @UsePipes(new ZodValidationPipe(applyPlanRequestSchema))
-  async apply(@CurrentUser() user: UserEntity, @Body() body: ApplyPlanRequest) {
+  async apply(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(applyPlanRequestSchema)) body: ApplyPlanRequest,
+  ) {
     return this.applyPlan.execute(user.id, body, todayDateString());
   }
 }

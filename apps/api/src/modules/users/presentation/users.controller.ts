@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Patch, UseGuards } from "@nestjs/common";
 import { updateUserProfileSchema, UpdateUserProfileInput } from "@ihsan/contracts";
 import { ClerkAuthGuard, AuthContext } from "../../../shared/guards/clerk-auth.guard";
 import { CurrentAuth } from "../../../shared/decorators/current-user.decorator";
@@ -20,8 +20,10 @@ export class UsersController {
   }
 
   @Patch()
-  @UsePipes(new ZodValidationPipe(updateUserProfileSchema))
-  async updateMe(@CurrentAuth() auth: AuthContext, @Body() body: UpdateUserProfileInput) {
+  async updateMe(
+    @CurrentAuth() auth: AuthContext,
+    @Body(new ZodValidationPipe(updateUserProfileSchema)) body: UpdateUserProfileInput,
+  ) {
     return this.updateUserProfile.execute(auth.clerkId, body);
   }
 }

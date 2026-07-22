@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { createExerciseSchema, CreateExerciseInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -26,8 +26,10 @@ export class ExerciseController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createExerciseSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateExerciseInput) {
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(createExerciseSchema)) body: CreateExerciseInput,
+  ) {
     const exercise = await this.createExercise.execute(user.id, body);
     return toExerciseDto(exercise);
   }

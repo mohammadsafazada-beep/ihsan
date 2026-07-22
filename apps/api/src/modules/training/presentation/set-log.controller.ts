@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Patch, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Delete, Param, Patch, UseGuards } from "@nestjs/common";
 import { updateSetSchema, UpdateSetInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -17,8 +17,11 @@ export class SetLogController {
   ) {}
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(updateSetSchema))
-  async update(@CurrentUser() user: UserEntity, @Param("id") id: string, @Body() body: UpdateSetInput) {
+  async update(
+    @CurrentUser() user: UserEntity,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateSetSchema)) body: UpdateSetInput,
+  ) {
     return this.updateSet.execute(id, user.id, body);
   }
 

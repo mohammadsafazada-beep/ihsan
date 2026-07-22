@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Res, UseGuards } from "@nestjs/common";
 import type { Response } from "express";
 import { sendMessageSchema, SendMessageInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
@@ -49,11 +49,10 @@ export class ChatController {
   }
 
   @Post("conversations/:id/messages")
-  @UsePipes(new ZodValidationPipe(sendMessageSchema))
   async postMessage(
     @CurrentUser() user: UserEntity,
     @Param("id") id: string,
-    @Body() body: SendMessageInput,
+    @Body(new ZodValidationPipe(sendMessageSchema)) body: SendMessageInput,
     @Res({ passthrough: false }) res: Response,
   ) {
     const finalText = await this.sendMessage.execute(user.id, id, body.content, todayDateString());

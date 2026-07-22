@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
 import { calendarDateSchema, logMeasurementSchema, LogMeasurementInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -30,8 +30,10 @@ export class MeasurementController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(logMeasurementSchema))
-  async log(@CurrentUser() user: UserEntity, @Body() body: LogMeasurementInput) {
+  async log(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(logMeasurementSchema)) body: LogMeasurementInput,
+  ) {
     const measurement = await this.logMeasurement.execute(user.id, body);
     return toMeasurementDto(measurement);
   }

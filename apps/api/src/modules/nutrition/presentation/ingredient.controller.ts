@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import {
   createIngredientSchema,
   CreateIngredientInput,
@@ -41,18 +41,19 @@ export class IngredientController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createIngredientSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateIngredientInput) {
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(createIngredientSchema)) body: CreateIngredientInput,
+  ) {
     const ingredient = await this.createIngredient.execute(user.id, body);
     return toIngredientDto(ingredient);
   }
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(updateIngredientSchema))
   async update(
     @CurrentUser() user: UserEntity,
     @Param("id") id: string,
-    @Body() body: UpdateIngredientInput,
+    @Body(new ZodValidationPipe(updateIngredientSchema)) body: UpdateIngredientInput,
   ) {
     const ingredient = await this.updateIngredient.execute(id, user.id, body);
     return toIngredientDto(ingredient);

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import {
   createMealSchema,
   CreateMealInput,
@@ -41,15 +41,20 @@ export class MealController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createMealSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateMealInput) {
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(createMealSchema)) body: CreateMealInput,
+  ) {
     const meal = await this.logMeal.execute(user.id, body);
     return toMealDto(meal);
   }
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(updateMealSchema))
-  async update(@CurrentUser() user: UserEntity, @Param("id") id: string, @Body() body: UpdateMealInput) {
+  async update(
+    @CurrentUser() user: UserEntity,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateMealSchema)) body: UpdateMealInput,
+  ) {
     const meal = await this.updateMeal.execute(id, user.id, body);
     return toMealDto(meal);
   }
@@ -61,11 +66,10 @@ export class MealController {
   }
 
   @Post(":id/save-as-template")
-  @UsePipes(new ZodValidationPipe(saveMealAsTemplateSchema))
   async saveAsTemplate(
     @CurrentUser() user: UserEntity,
     @Param("id") id: string,
-    @Body() body: SaveMealAsTemplateInput,
+    @Body(new ZodValidationPipe(saveMealAsTemplateSchema)) body: SaveMealAsTemplateInput,
   ) {
     const template = await this.saveMealAsTemplate.execute(id, user.id, body);
     return toMealTemplateDto(template);

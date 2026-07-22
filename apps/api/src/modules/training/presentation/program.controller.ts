@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { createProgramSchema, CreateProgramInput, updateProgramSchema, UpdateProgramInput } from "@ihsan/contracts";
 import { z } from "zod";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
@@ -33,15 +33,20 @@ export class ProgramController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createProgramSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateProgramInput) {
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(createProgramSchema)) body: CreateProgramInput,
+  ) {
     const program = await this.createProgram.execute(user.id, body);
     return toProgramDto(program);
   }
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(updateProgramSchema))
-  async update(@CurrentUser() user: UserEntity, @Param("id") id: string, @Body() body: UpdateProgramInput) {
+  async update(
+    @CurrentUser() user: UserEntity,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateProgramSchema)) body: UpdateProgramInput,
+  ) {
     const program = await this.updateProgram.execute(id, user.id, body);
     return toProgramDto(program);
   }

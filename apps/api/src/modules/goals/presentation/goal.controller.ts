@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { createGoalSchema, CreateGoalInput, updateGoalSchema, UpdateGoalInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -24,14 +24,16 @@ export class GoalController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createGoalSchema))
-  async create(@CurrentUser() user: UserEntity, @Body() body: CreateGoalInput) {
+  async create(@CurrentUser() user: UserEntity, @Body(new ZodValidationPipe(createGoalSchema)) body: CreateGoalInput) {
     return this.createGoal.execute(user.id, body);
   }
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(updateGoalSchema))
-  async update(@CurrentUser() user: UserEntity, @Param("id") id: string, @Body() body: UpdateGoalInput) {
+  async update(
+    @CurrentUser() user: UserEntity,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateGoalSchema)) body: UpdateGoalInput,
+  ) {
     return this.updateGoal.execute(id, user.id, body);
   }
 }

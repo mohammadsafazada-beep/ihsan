@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { setNutritionTargetSchema, SetNutritionTargetInput } from "@ihsan/contracts";
 import { ClerkAuthGuard } from "../../../shared/guards/clerk-auth.guard";
 import { ResolveCurrentUserGuard } from "../../../shared/guards/resolve-current-user.guard";
@@ -22,8 +22,10 @@ export class NutritionTargetController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(setNutritionTargetSchema))
-  async set(@CurrentUser() user: UserEntity, @Body() body: SetNutritionTargetInput) {
+  async set(
+    @CurrentUser() user: UserEntity,
+    @Body(new ZodValidationPipe(setNutritionTargetSchema)) body: SetNutritionTargetInput,
+  ) {
     return this.setNutritionTarget.execute(user.id, body);
   }
 }
